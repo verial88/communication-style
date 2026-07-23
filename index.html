@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опросник</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .question-counter {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        h2 {
+            color: #1f2937;
+            font-size: 24px;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            color: #374151;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f5f3ff;
+            transform: translateX(4px);
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .option:hover .option-letter,
+        .option.selected .option-letter {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn {
+            margin-top: 24px;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .btn.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .btn.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .result-description {
+            color: #6b7280;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        #qrcode img {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .qr-label {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .qr-link {
+            color: #667eea;
+            font-size: 13px;
+            word-break: break-all;
+            margin-bottom: 24px;
+        }
+
+        .restart-btn {
+            background: transparent;
+            border: 2px solid #e5e7eb;
+            color: #6b7280;
+            padding: 14px 32px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .restart-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+                border-radius: 20px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="quiz-screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+            <div class="question-counter" id="counter">Вопрос 1 из 4</div>
+            <h2 id="question-text">Загрузка...</h2>
+            <div class="options" id="options"></div>
+            <button class="btn" id="next-btn" onclick="nextQuestion()">Далее</button>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <div class="result-icon" id="result-icon">🎉</div>
+            <div class="score-display" id="score">0</div>
+            <div class="score-label">баллов из <span id="max-score">0</span></div>
+            <div class="result-title" id="result-title">Результат</div>
+            <div class="result-description" id="result-desc">Описание результата</div>
+            
+            <div class="qr-label">Отсканируй QR-код, чтобы перейти:</div>
+            <div id="qrcode"></div>
+            <div class="qr-link" id="qr-link"></div>
+            
+            <button class="restart-btn" onclick="restart()">Пройти ещё раз</button>
+        </div>
+    </div>
+
+    <script>
+        const QUESTIONS = [
+            {
+                text: "Какой тип отдыха тебе ближе всего?",
+                options: [
+                    { text: "Активный: горы, походы, спорт", points: 3 },
+                    { text: "Пляжный: море, солнце, расслабон", points: 1 },
+                    { text: "Культурный: музеи, театры, экскурсии", points: 2 },
+                    { text: "Гастрономический: рестораны, винодельни, кафе", points: 2 }
+                ]
+            },
+            {
+                text: "Сколько времени готов потратить на дорогу?",
+                options: [
+                    { text: "Максимум 2 часа", points: 1 },
+                    { text: "До 5 часов — нормально", points: 2 },
+                    { text: "Целый день в пути — не проблема", points: 3 },
+                    { text: "Лететь через полмира? Да запросто!", points: 3 }
+                ]
+            },
+            {
+                text: "Какой бюджет на поездку?",
+                options: [
+                    { text: "Экономлю, хочу дёшево и сердито", points: 1 },
+                    { text: "Средний — комфорт важен, но без фанатизма", points: 2 },
+                    { text: "Не ограничен, хочу лучшее", points: 3 },
+                    { text: "Главное — эмоции, а не цена", points: 2 }
+                ]
+            },
+            {
+                text: "С кем планируешь путешествовать?",
+                options: [
+                    { text: "Один/одна — свобода превыше всего", points: 3 },
+                    { text: "С партнёром — романтика", points: 2 },
+                    { text: "С друзьями — веселье и приключения", points: 2 },
+                    { text: "С семьёй — удобство для всех", points: 1 }
+                ]
+            }
+        ];
+
+        const RESULTS = [
+            {
+                min: 0, max: 5,
+                icon: "🏖️",
+                title: "Пляжный релакс",
+                desc: "Тебе нужен тёплый песок, шум волн и никакой суеты. Идеальный вариант — ближайшее морское побережье с уютным отелем.",
+                link: "https://www.booking.com/searchresults.html?ss=sea+beach+resort"
+            },
+            {
+                min: 6, max: 8,
+                icon: "🏔️",
+                title: "Горный актив",
+                desc: "Ты готов к приключениям, но без крайностей. Горные тропы, живописные виды и умеренные нагрузки — твоё всё.",
+                link: "https://www.alltrails.com/"
+            },
+            {
+                min: 9, max: 10,
+                icon: "🌍",
+                title: "Экстремальный турист",
+                desc: "Ты живёшь ради острых ощущений! Дальние страны, неизведанные маршруты и максимум впечатлений ждут тебя.",
+                link: "https://www.lonelyplanet.com/"
+            },
+            {
+                min: 11, max: 12,
+                icon: "🚀",
+                title: "Космический путешественник",
+                desc: "Ты готов на всё ради незабываемых эмоций. Самые дикие локации, сложные маршруты и полный иммерсив — это про тебя.",
+                link: "https://www.nationalgeographic.com/travel/"
+            }
+        ];
+
+        const QR_LINK = "https://example.com";
+
+        let currentQuestion = 0;
+        let totalScore = 0;
+        let selectedOption = null;
+
+        const maxScore = QUESTIONS.reduce((sum, q) => {
+            return sum + Math.max(...q.options.map(o => o.points));
+        }, 0);
+
+        function renderQuestion() {
+            const q = QUESTIONS[currentQuestion];
+            document.getElementById('counter').textContent = `Вопрос ${currentQuestion + 1} из ${QUESTIONS.length}`;
+            document.getElementById('question-text').textContent = q.text;
+            
+            const progress = ((currentQuestion) / QUESTIONS.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            selectedOption = null;
+            document.getElementById('next-btn').classList.remove('active');
+
+            const letters = ['A', 'B', 'C', 'D'];
+            q.options.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.innerHTML = `
+                    <div class="option-letter">${letters[idx]}</div>
+                    <div>${opt.text}</div>
+                `;
+                div.onclick = () => selectOption(idx, div);
+                optionsContainer.appendChild(div);
+            });
+        }
+
+        function selectOption(index, element) {
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedOption = index;
+            document.getElementById('next-btn').classList.add('active');
+        }
+
+        function nextQuestion() {
+            if (selectedOption === null) return;
+            
+            totalScore += QUESTIONS[currentQuestion].options[selectedOption].points;
+            currentQuestion++;
+
+            if (currentQuestion >= QUESTIONS.length) {
+                showResult();
+            } else {
+                renderQuestion();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').style.display = 'block';
+
+            const result = RESULTS.find(r => totalScore >= r.min && totalScore <= r.max) || RESULTS[RESULTS.length - 1];
+
+            document.getElementById('result-icon').textContent = result.icon;
+            document.getElementById('score').textContent = totalScore;
+            document.getElementById('max-score').textContent = maxScore;
+            document.getElementById('result-title').textContent = result.title;
+            document.getElementById('result-desc').textContent = result.desc;
+
+            const link = QR_LINK !== "https://example.com" ? QR_LINK : result.link;
+            document.getElementById('qr-link').textContent = link;
+            
+            new QRCode(document.getElementById("qrcode"), {
+                text: link,
+                width: 180,
+                height: 180,
+                colorDark: "#1f2937",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function restart() {
+            currentQuestion = 0;
+            totalScore = 0;
+            selectedOption = null;
+            document.getElementById('qrcode').innerHTML = '';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        renderQuestion();
+    </script>
+</body>
+</html>
