@@ -123,9 +123,14 @@
             color: white;
         }
 
-        .btn {
+        .nav-buttons {
             margin-top: 24px;
-            width: 100%;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
             padding: 16px;
             border: none;
             border-radius: 16px;
@@ -147,6 +152,27 @@
         .btn.active:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-btn {
+            padding: 16px 24px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            background: transparent;
+            color: #6b7280;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .back-btn.hidden-btn {
+            visibility: hidden;
         }
 
         .result-screen {
@@ -203,6 +229,11 @@
             margin: 24px 0;
         }
 
+        .qr-anchor {
+            display: inline-block;
+            cursor: pointer;
+        }
+
         #qrcode img {
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -215,6 +246,7 @@
         }
 
         .qr-link {
+            display: block;
             color: #667eea;
             font-size: 13px;
             word-break: break-all;
@@ -262,7 +294,10 @@
             <div class="question-counter" id="counter">Вопрос 1 из 9</div>
             <h2 id="question-text">Загрузка...</h2>
             <div class="options" id="options"></div>
-            <button class="btn" id="next-btn" onclick="nextQuestion()">Далее</button>
+            <div class="nav-buttons">
+                <button class="back-btn hidden-btn" id="back-btn" onclick="prevQuestion()">Назад</button>
+                <button class="btn" id="next-btn" onclick="nextQuestion()">Далее</button>
+            </div>
         </div>
 
         <div class="result-screen" id="result-screen">
@@ -271,8 +306,10 @@
             <div id="results-container"></div>
 
             <div class="qr-label">Отсканируй QR-код, чтобы перейти:</div>
-            <div id="qrcode"></div>
-            <div class="qr-link" id="qr-link"></div>
+            <a class="qr-anchor" id="qr-anchor" target="_blank" rel="noopener">
+                <div id="qrcode"></div>
+            </a>
+            <a class="qr-link" id="qr-link" target="_blank" rel="noopener"></a>
 
             <button class="restart-btn" onclick="restart()">Пройти ещё раз</button>
         </div>
@@ -420,6 +457,9 @@
             optionsContainer.innerHTML = '';
             selectedOption = null;
             document.getElementById('next-btn').classList.remove('active');
+            document.getElementById('back-btn').classList.toggle('hidden-btn', currentQuestion === 0);
+
+            const previousAnswer = answers[currentQuestion];
 
             q.options.forEach((optText, idx) => {
                 const div = document.createElement('div');
@@ -430,6 +470,10 @@
                 `;
                 div.onclick = () => selectOption(idx, div);
                 optionsContainer.appendChild(div);
+
+                if (previousAnswer === LETTERS[idx]) {
+                    selectOption(idx, div);
+                }
             });
         }
 
@@ -443,7 +487,7 @@
         function nextQuestion() {
             if (selectedOption === null) return;
 
-            answers.push(LETTERS[selectedOption]);
+            answers[currentQuestion] = LETTERS[selectedOption];
             currentQuestion++;
 
             if (currentQuestion >= QUESTIONS.length) {
@@ -451,6 +495,12 @@
             } else {
                 renderQuestion();
             }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion === 0) return;
+            currentQuestion--;
+            renderQuestion();
         }
 
         function getWinners() {
@@ -485,7 +535,10 @@
                 resultsContainer.appendChild(block);
             });
 
-            document.getElementById('qr-link').textContent = QR_LINK;
+            document.getElementById('qr-anchor').href = QR_LINK;
+            const qrLink = document.getElementById('qr-link');
+            qrLink.href = QR_LINK;
+            qrLink.textContent = QR_LINK;
 
             new QRCode(document.getElementById("qrcode"), {
                 text: QR_LINK,
