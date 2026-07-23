@@ -160,6 +160,10 @@
             to { opacity: 1; }
         }
 
+        .result-block {
+            margin-bottom: 28px;
+        }
+
         .result-icon {
             font-size: 64px;
             margin-bottom: 16px;
@@ -175,7 +179,6 @@
             color: #6b7280;
             font-size: 16px;
             line-height: 1.6;
-            margin-bottom: 30px;
         }
 
         .score-display {
@@ -255,23 +258,21 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progress"></div>
             </div>
-            <div class="question-counter" id="counter">Вопрос 1 из 4</div>
+            <div class="question-counter" id="counter">Вопрос 1 из 9</div>
             <h2 id="question-text">Загрузка...</h2>
             <div class="options" id="options"></div>
             <button class="btn" id="next-btn" onclick="nextQuestion()">Далее</button>
         </div>
 
         <div class="result-screen" id="result-screen">
-            <div class="result-icon" id="result-icon">🎉</div>
-            <div class="score-display" id="score">0</div>
-            <div class="score-label">баллов из <span id="max-score">0</span></div>
-            <div class="result-title" id="result-title">Результат</div>
-            <div class="result-description" id="result-desc">Описание результата</div>
-            
+            <div class="score-display" id="score"></div>
+            <div class="score-label">ваш преобладающий вариант ответов</div>
+            <div id="results-container"></div>
+
             <div class="qr-label">Отсканируй QR-код, чтобы перейти:</div>
             <div id="qrcode"></div>
             <div class="qr-link" id="qr-link"></div>
-            
+
             <button class="restart-btn" onclick="restart()">Пройти ещё раз</button>
         </div>
     </div>
@@ -281,87 +282,136 @@
             {
                 text: "Какой тип отдыха тебе ближе всего?",
                 options: [
-                    { text: "Активный: горы, походы, спорт", points: 3 },
-                    { text: "Пляжный: море, солнце, расслабон", points: 1 },
-                    { text: "Культурный: музеи, театры, экскурсии", points: 2 },
-                    { text: "Гастрономический: рестораны, винодельни, кафе", points: 2 }
+                    "Пляжный: море, солнце, расслабон",
+                    "Активный: горы, походы, спорт",
+                    "Культурный: музеи, театры, экскурсии",
+                    "Экстремальный: дайвинг, рафтинг, параплан",
+                    "Всё сразу и по максимуму"
                 ]
             },
             {
                 text: "Сколько времени готов потратить на дорогу?",
                 options: [
-                    { text: "Максимум 2 часа", points: 1 },
-                    { text: "До 5 часов — нормально", points: 2 },
-                    { text: "Целый день в пути — не проблема", points: 3 },
-                    { text: "Лететь через полмира? Да запросто!", points: 3 }
+                    "Максимум 2 часа",
+                    "До 5 часов — нормально",
+                    "Целый день в пути — не проблема",
+                    "Лететь через полмира? Да запросто!",
+                    "Дорога — уже часть приключения"
                 ]
             },
             {
                 text: "Какой бюджет на поездку?",
                 options: [
-                    { text: "Экономлю, хочу дёшево и сердито", points: 1 },
-                    { text: "Средний — комфорт важен, но без фанатизма", points: 2 },
-                    { text: "Не ограничен, хочу лучшее", points: 3 },
-                    { text: "Главное — эмоции, а не цена", points: 2 }
+                    "Экономлю, хочу дёшево и сердито",
+                    "Средний — комфорт важен, но без фанатизма",
+                    "Готов потратиться на впечатления",
+                    "Не ограничен, хочу лучшее",
+                    "Главное — эмоции, а не цена"
                 ]
             },
             {
                 text: "С кем планируешь путешествовать?",
                 options: [
-                    { text: "Один/одна — свобода превыше всего", points: 3 },
-                    { text: "С партнёром — романтика", points: 2 },
-                    { text: "С друзьями — веселье и приключения", points: 2 },
-                    { text: "С семьёй — удобство для всех", points: 1 }
+                    "С семьёй — удобство для всех",
+                    "С друзьями — веселье и приключения",
+                    "С партнёром — романтика",
+                    "Один/одна — свобода превыше всего",
+                    "В большой компании единомышленников"
+                ]
+            },
+            {
+                text: "Идеальное утро в отпуске — это...",
+                options: [
+                    "Завтрак у бассейна и шезлонг",
+                    "Подъём на рассвете и выход на маршрут",
+                    "Кофе в старом городе и музей до обеда",
+                    "Прыжок с парашютом — сразу в боевой режим",
+                    "Спонтанность: куда глаза глядят"
+                ]
+            },
+            {
+                text: "Что обязательно должно быть в чемодане?",
+                options: [
+                    "Крем от загара и любимая книга",
+                    "Треккинговые ботинки и термос",
+                    "Путеводитель и удобная обувь для прогулок",
+                    "Экшн-камера и страховка от всего на свете",
+                    "Только паспорт — остальное куплю на месте"
+                ]
+            },
+            {
+                text: "Выбери жильё:",
+                options: [
+                    "Отель «всё включено» у моря",
+                    "Домик в горах или кемпинг",
+                    "Бутик-отель в историческом центре",
+                    "Палатка под звёздами в глуши",
+                    "Каждую ночь — новое место"
+                ]
+            },
+            {
+                text: "Твой идеальный вечер в поездке:",
+                options: [
+                    "Ужин на пляже под шум волн",
+                    "Костёр, гитара и разговоры до утра",
+                    "Театр, джаз-клуб или местный фестиваль",
+                    "Ночной клуб или ночной спуск с горы",
+                    "Заблудиться в незнакомом городе"
+                ]
+            },
+            {
+                text: "Что для тебя главный сувенир из поездки?",
+                options: [
+                    "Красивый загар и полный релакс",
+                    "Покорённая вершина",
+                    "Фотографии архитектуры и новые знания",
+                    "Адреналин и истории, которым не поверят",
+                    "Ощущение, что пожил другой жизнью"
                 ]
             }
         ];
 
-        const RESULTS = [
-            {
-                min: 0, max: 5,
+        const RESULTS = {
+            A: {
                 icon: "🏖️",
                 title: "Пляжный релакс",
-                desc: "Тебе нужен тёплый песок, шум волн и никакой суеты. Идеальный вариант — ближайшее морское побережье с уютным отелем.",
-                link: "https://www.booking.com/searchresults.html?ss=sea+beach+resort"
+                desc: "Тебе нужен тёплый песок, шум волн и никакой суеты. Идеальный вариант — ближайшее морское побережье с уютным отелем."
             },
-            {
-                min: 6, max: 8,
+            B: {
                 icon: "🏔️",
                 title: "Горный актив",
-                desc: "Ты готов к приключениям, но без крайностей. Горные тропы, живописные виды и умеренные нагрузки — твоё всё.",
-                link: "https://www.alltrails.com/"
+                desc: "Ты готов к приключениям, но без крайностей. Горные тропы, живописные виды и умеренные нагрузки — твоё всё."
             },
-            {
-                min: 9, max: 10,
+            C: {
+                icon: "🏛️",
+                title: "Культурный исследователь",
+                desc: "Музеи, архитектура и локальный колорит — вот что заряжает тебя энергией. Твоя стихия — города с историей."
+            },
+            D: {
                 icon: "🌍",
                 title: "Экстремальный турист",
-                desc: "Ты живёшь ради острых ощущений! Дальние страны, неизведанные маршруты и максимум впечатлений ждут тебя.",
-                link: "https://www.lonelyplanet.com/"
+                desc: "Ты живёшь ради острых ощущений! Дальние страны, неизведанные маршруты и максимум впечатлений ждут тебя."
             },
-            {
-                min: 11, max: 12,
+            E: {
                 icon: "🚀",
                 title: "Космический путешественник",
-                desc: "Ты готов на всё ради незабываемых эмоций. Самые дикие локации, сложные маршруты и полный иммерсив — это про тебя.",
-                link: "https://www.nationalgeographic.com/travel/"
+                desc: "Ты готов на всё ради незабываемых эмоций. Самые дикие локации, сложные маршруты и полный иммерсив — это про тебя."
             }
-        ];
+        };
 
         const QR_LINK = "https://example.com";
 
-        let currentQuestion = 0;
-        let totalScore = 0;
-        let selectedOption = null;
+        const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
-        const maxScore = QUESTIONS.reduce((sum, q) => {
-            return sum + Math.max(...q.options.map(o => o.points));
-        }, 0);
+        let currentQuestion = 0;
+        let answers = [];
+        let selectedOption = null;
 
         function renderQuestion() {
             const q = QUESTIONS[currentQuestion];
             document.getElementById('counter').textContent = `Вопрос ${currentQuestion + 1} из ${QUESTIONS.length}`;
             document.getElementById('question-text').textContent = q.text;
-            
+
             const progress = ((currentQuestion) / QUESTIONS.length) * 100;
             document.getElementById('progress').style.width = progress + '%';
 
@@ -370,13 +420,12 @@
             selectedOption = null;
             document.getElementById('next-btn').classList.remove('active');
 
-            const letters = ['A', 'B', 'C', 'D'];
-            q.options.forEach((opt, idx) => {
+            q.options.forEach((optText, idx) => {
                 const div = document.createElement('div');
                 div.className = 'option';
                 div.innerHTML = `
-                    <div class="option-letter">${letters[idx]}</div>
-                    <div>${opt.text}</div>
+                    <div class="option-letter">${LETTERS[idx]}</div>
+                    <div>${optText}</div>
                 `;
                 div.onclick = () => selectOption(idx, div);
                 optionsContainer.appendChild(div);
@@ -392,8 +441,8 @@
 
         function nextQuestion() {
             if (selectedOption === null) return;
-            
-            totalScore += QUESTIONS[currentQuestion].options[selectedOption].points;
+
+            answers.push(LETTERS[selectedOption]);
             currentQuestion++;
 
             if (currentQuestion >= QUESTIONS.length) {
@@ -403,23 +452,42 @@
             }
         }
 
+        function getWinners() {
+            const counts = {};
+            answers.forEach(letter => counts[letter] = (counts[letter] || 0) + 1);
+            const maxCount = Math.max(...Object.values(counts));
+            // При равенстве берём первые два варианта по алфавиту
+            return LETTERS.filter(letter => counts[letter] === maxCount).slice(0, 2);
+        }
+
         function showResult() {
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('result-screen').style.display = 'block';
 
-            const result = RESULTS.find(r => totalScore >= r.min && totalScore <= r.max) || RESULTS[RESULTS.length - 1];
+            const winners = getWinners();
 
-            document.getElementById('result-icon').textContent = result.icon;
-            document.getElementById('score').textContent = totalScore;
-            document.getElementById('max-score').textContent = maxScore;
-            document.getElementById('result-title').textContent = result.title;
-            document.getElementById('result-desc').textContent = result.desc;
+            document.getElementById('score').textContent = winners.join(' + ');
 
-            const link = QR_LINK !== "https://example.com" ? QR_LINK : result.link;
-            document.getElementById('qr-link').textContent = link;
-            
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '';
+
+            winners.forEach(letter => {
+                const result = RESULTS[letter];
+
+                const block = document.createElement('div');
+                block.className = 'result-block';
+                block.innerHTML = `
+                    <div class="result-icon">${result.icon}</div>
+                    <div class="result-title">${result.title}</div>
+                    <div class="result-description">${result.desc}</div>
+                `;
+                resultsContainer.appendChild(block);
+            });
+
+            document.getElementById('qr-link').textContent = QR_LINK;
+
             new QRCode(document.getElementById("qrcode"), {
-                text: link,
+                text: QR_LINK,
                 width: 180,
                 height: 180,
                 colorDark: "#1f2937",
@@ -430,7 +498,7 @@
 
         function restart() {
             currentQuestion = 0;
-            totalScore = 0;
+            answers = [];
             selectedOption = null;
             document.getElementById('qrcode').innerHTML = '';
             document.getElementById('result-screen').style.display = 'none';
