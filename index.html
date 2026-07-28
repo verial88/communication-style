@@ -70,6 +70,8 @@
             font-size: 24px;
             margin-bottom: 8px;
             line-height: 1.4;
+            /* Резервируем место под две строки, чтобы страница не прыгала при смене вопроса */
+            min-height: calc(1.4em * 2);
         }
 
         .question-hint {
@@ -87,7 +89,10 @@
         }
 
         .option {
-            padding: 16px 20px;
+            position: relative;
+            padding: 16px 52px 16px 20px;
+            /* Резервируем место под две строки текста, чтобы страница не прыгала */
+            min-height: 72px;
             border: 2px solid #e5e7eb;
             border-radius: 16px;
             cursor: pointer;
@@ -122,6 +127,23 @@
             border-color: #667eea;
             background: #ede9fe;
             color: #5b21b6;
+        }
+
+        .check-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .check-icon path {
+            stroke-dasharray: 24;
+            stroke-dashoffset: 24;
+            animation: drawCheck 0.4s ease-out 0.05s forwards;
+        }
+
+        @keyframes drawCheck {
+            to { stroke-dashoffset: 0; }
         }
 
         .option-letter {
@@ -286,6 +308,8 @@
             }
             h2 {
                 font-size: 20px;
+                /* На узком экране вопрос может занять три строки */
+                min-height: calc(1.4em * 3);
             }
         }
     </style>
@@ -482,6 +506,11 @@
 
                 if (previousAnswer === LETTERS[idx]) {
                     div.classList.add('selected');
+                    div.insertAdjacentHTML('beforeend', `
+                        <svg class="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 12.5l5 5L20 6.5" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    `);
                 }
             });
         }
@@ -491,10 +520,16 @@
             answered = true;
 
             document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.check-icon').forEach(el => el.remove());
             element.classList.add('selected');
+            element.insertAdjacentHTML('beforeend', `
+                <svg class="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 12.5l5 5L20 6.5" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `);
             answers[currentQuestion] = LETTERS[index];
 
-            // Небольшая пауза, чтобы пользователь увидел выбор
+            // Небольшая пауза, чтобы пользователь увидел выбор и анимация галочки доиграла
             setTimeout(() => {
                 currentQuestion++;
                 if (currentQuestion >= QUESTIONS.length) {
@@ -502,7 +537,7 @@
                 } else {
                     renderQuestion();
                 }
-            }, 250);
+            }, 500);
         }
 
         function prevQuestion() {
@@ -566,7 +601,32 @@
             renderQuestion();
         }
 
-        renderQuestion();
+        // Фиксируем высоту экрана вопроса по самому высокому вопросу,
+        // чтобы страница не прыгала при переходах
+        function lockQuizHeight() {
+            const quiz = document.getElementById('quiz-screen');
+            const saved = currentQuestion;
+            let max = 0;
+
+            for (let i = 0; i < QUESTIONS.length; i++) {
+                currentQuestion = i;
+                renderQuestion();
+                max = Math.max(max, quiz.offsetHeight);
+            }
+
+            currentQuestion = saved;
+            renderQuestion();
+            quiz.style.minHeight = max + 'px';
+        }
+
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            if (document.getElementById('quiz-screen').classList.contains('hidden')) return;
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(lockQuizHeight, 200);
+        });
+
+        lockQuizHeight();
     </script>
 </body>
 </html>
