@@ -532,6 +532,7 @@
             // Небольшая пауза, чтобы пользователь увидел выбор и анимация галочки доиграла
             setTimeout(() => {
                 currentQuestion++;
+                window.scrollTo(0, 0);
                 if (currentQuestion >= QUESTIONS.length) {
                     showResult();
                 } else {
@@ -543,6 +544,7 @@
         function prevQuestion() {
             if (currentQuestion === 0) return;
             currentQuestion--;
+            window.scrollTo(0, 0);
             renderQuestion();
         }
 
@@ -598,6 +600,7 @@
             document.getElementById('qrcode').innerHTML = '';
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('quiz-screen').classList.remove('hidden');
+            window.scrollTo(0, 0);
             renderQuestion();
         }
 
